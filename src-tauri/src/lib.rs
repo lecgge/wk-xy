@@ -20,7 +20,7 @@ pub fn run() {
 #[tokio::main]
 pub async fn start(){
     let mut can_matrix = can_matrix::CanMatrix::new();
-    can_matrix.load_from_arxml("./resource/output.json");
+    let _ = can_matrix.load_from_arxml("./resource/output.json");
     //读取json文件
     // let data = fs::read_to_string("./resource/output.json")?;
     // // println!("Parsed JSON:\n{:#?}", data);

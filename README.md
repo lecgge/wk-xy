@@ -1,4 +1,7 @@
-# Tauri + Vanilla
+# 自研星仪1.0代码仓库
+使用tauri + rust开发前后端代码
+
+## Tauri + Vanilla
 
 This template should help get you started developing with Tauri in vanilla HTML, CSS and Javascript.
 

@@ -11,6 +11,9 @@
     "windows": [
       {
         "title": "wk-xy-rust",
+        "decorations": false,
+        "transparent": true,
+        "fullscreen": true,
         "width": 800,
         "height": 600
       }
