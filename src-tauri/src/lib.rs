@@ -1,11 +1,15 @@
+use std::thread::sleep;
+
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod can_module;
 mod can_matrix;
 mod arxml_bean;
 
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+fn greet(device: &str) -> String {
+    // sleep(std::time::Duration::from_secs(10));
+    println!("Hello, {}!", device);
+    format!("Hello, {}!", device)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

@@ -1,39 +1,144 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="styles.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri App</title>
-    <script type="module" src="/main.js" defer></script>
-  </head>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>测试部</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f5f5;
+        }
 
-  <body>
-    <main class="container">
-      <h1>Welcome to Tauri</h1>
+        .header {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 40px
+        }
 
-      <div class="row">
-        <a href="https://tauri.app" target="_blank">
-          <img src="/assets/tauri.svg" class="logo tauri" alt="Tauri logo" />
-        </a>
-        <a
-          href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"
-          target="_blank"
-        >
-          <img
-            src="/assets/javascript.svg"
-            class="logo vanilla"
-            alt="JavaScript logo"
-          />
-        </a>
-      </div>
-      <p>Click on the Tauri logo to learn more about the framework</p>
+        .header img {
+            border-radius: 8px;
+        }
 
-      <form class="row" id="greet-form">
-        <input id="greet-input" placeholder="Enter a name..." />
-        <button type="submit">Greet</button>
-      </form>
-      <p id="greet-msg"></p>
-    </main>
-  </body>
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 100px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .button {
+            /* 保持原有样式 */
+            padding: 12px 24px;
+            font-size: 16px;
+            width: 100px;
+            height: 100px;
+            border: none;
+            border-radius: 6px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none; /* 去掉下划线 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
+        .text {
+            font-size: 16px;
+            color: #555;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .bottom {
+            display: flex;
+            justify-content: left; /* 水平居中 */
+            align-items: center;      /* 垂直居中 */
+            gap: 10px;
+            width: 100%;
+            margin-top: 50px;
+            margin-bottom: 10px;
+
+        }
+    </style>
+</head>
+<body>
+<!-- 头部图片 -->
+<div class="header">
+    <img src="./assets/tauri.svg" height="50" width="50" alt="顶部图片"/>
+    <img src="./assets/tauri.svg" height="50" width="50" alt="顶部图片"/>
+    <img src="./assets/tauri.svg" height="50" width="50" alt="顶部图片"/>
+</div>
+
+<!-- 标题 -->
+<div class="title">测试部</div>
+
+<!-- 内容区域 -->
+<div class="content">
+    <button class="button" onclick="handleClick(event,'2712')">2712/8155</button>
+
+    <button class="button" onclick="handleClick(event,'ZXD')">ZXD</button>
+
+    <button class="button" onclick="handleClick(event,'ZXD-3.0')">ZXD-3.0</button>
+</div>
+
+<div class="bottom">
+
+    <div class="text">文字1</div>
+    <div class="text">文字2</div>
+    <div class="text">文字3</div>
+</div>
+
+<script>
+    const { invoke } = window.__TAURI__.core;
+    async function handleClick(event,  device) {
+        event.preventDefault();
+
+
+        try {
+            console.log(device)
+            const result = await invoke("greet", { device });
+            console.log("greet 完成:", result);
+            if (device === '2712'){
+                window.location.href = "/device-2712-8155.html";
+            } else if (device === 'ZXD'){
+                window.location.href = "/device-ZXD.html";
+            } else {
+                window.location.href = "/device-ZXD3.0.html";
+            }
+        } catch (error) {
+            console.error("调用失败:", error);
+            alert("操作失败，请重试");
+        }
+    }
+</script>
+</body>
 </html>
