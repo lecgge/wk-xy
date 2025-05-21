@@ -30,18 +30,18 @@ pub struct CanModule {
     single_shot_tx: mpsc::Sender<CanMessage>,
     /// 停止信号（原子操作保证线程安全）
     stop_signal: Arc<AtomicBool>,
+    can_matrix: CanMatrix
 }
 
 impl CanModule {
     /// 创建CAN模块实例
     /// # 参数
     /// - interface: 接口名，如"can0"
-    pub fn new(interface: &str) -> Result<Self, socketcan::Error> {
+    pub fn new(interface: &str, can_matrix: CanMatrix) -> Result<Self, socketcan::Error> {
         // 初始化CAN套接字（非阻塞模式）
         let socket = CanFdSocket::open(interface)?;
         socket.set_nonblocking(true)?;
         let socket = Arc::new(Mutex::new(socket));
-
         // 共享数据结构初始化
         let periodic_messages = Arc::new(Mutex::new(HashMap::new()));
         let (single_shot_tx, single_shot_rx) = mpsc::channel(100);
@@ -67,6 +67,7 @@ impl CanModule {
             periodic_messages,
             single_shot_tx,
             stop_signal,
+            can_matrix
         })
     }
 
@@ -194,6 +195,56 @@ impl CanModule {
             interval.tick().await;
         }
     }
+    
+    ///  发送单个信号
+    pub async fn send_signal(&self, cluster_name: String, frame_id: i32, signal_name: &str, value: f32) {
+        let cluster = self.can_matrix.clusters.get(&cluster_name).unwrap();
+        let frame = cluster.frame_by_id.get(&frame_id).unwrap();
+        //如果这个信号对应的报文是周期报文
+        if frame.cycle_time.unwrap() > 0 {
+            //判断这个报文是否存在发送队列中
+            let mut messages = self.periodic_messages.lock().await;
+            if let Some(message) = messages.get_mut(&(frame_id as u32)) {
+                //如果存在，则更新这个报文的信号值
+                //将已存在报文解包
+                let mut signals = self.can_matrix.get_signals_by_message(cluster_name.clone(), frame_id, &message.data).unwrap();
+                //更新信号值
+                signals.insert(signal_name.to_string(), value);
+                //重新打包报文
+                if let Some(message) = self.can_matrix.get_message_by_signals(
+                    cluster_name.clone(),
+                    frame_id,
+                    signals
+                ){
+                    //发送报文
+                    messages.insert(message.id,message);
+                }
+                
+            } else {
+                //如果不存在，则创建一个新的报文并发送
+                if let Some(message) = self.can_matrix.get_message_by_signals(
+                    cluster_name,
+                    frame_id,
+                    HashMap::from([(signal_name.to_string(), value)
+                    ]),
+                ){
+                    self.add_periodic_message(message).await;
+                }
+                
+            }
+        } else {
+            //否则只发送一帧
+            let data = frame.encode(HashMap::from([(signal_name.to_string(), value)])).unwrap();
+            self.send_once(CanMessage {
+                id: frame_id as u32,
+                data,
+                period_ms: 0,
+                is_fd: frame.is_fd.unwrap(),
+                next_send_time: None
+            }).await;
+        }
+        
+    }
 
     /// 添加周期消息
     /// # 参数
@@ -217,19 +268,19 @@ impl CanModule {
             .await
             .expect("Message channel closed");
     }
-}
 
-impl Drop for CanModule {
-    fn drop(&mut self) {
+    pub fn drop(&mut self) {
         // 设置停止信号
         self.stop_signal.store(true, Ordering::Relaxed);
     }
 }
 
-pub(crate) async fn start(can_matrix: CanMatrix) -> Result<(), Box<dyn std::error::Error>> {
+
+
+pub(crate) async fn start(can_matrix: CanMatrix,device:&str) -> Result<(), Box<dyn std::error::Error>> {
     // 初始化CAN模块
-    let can = CanModule::new("vcan0")?;
-    let message = can_matrix.get_message_by_signals(
+    let mut can = CanModule::new(device,can_matrix)?;
+    let message = can.can_matrix.get_message_by_signals(
         String::from("ADCANFD"),
         0x4D2,
         HashMap::from([("isHADS_NM_BSMtoRMS".to_string(), 1.0f32),
@@ -271,6 +322,7 @@ pub(crate) async fn start(can_matrix: CanMatrix) -> Result<(), Box<dyn std::erro
 
     // 运行10秒后自动停止
     tokio::time::sleep(Duration::from_secs(10)).await;
-
+    can.drop();
+    tokio::time::sleep(Duration::from_secs(10)).await;
     Ok(())
 }

@@ -125,8 +125,7 @@
 
         try {
             console.log(device)
-            const result = await invoke("greet", { device });
-            console.log("greet 完成:", result);
+            const result = await invoke("start", { device });
             if (device === '2712'){
                 window.location.href = "/device-2712-8155.html";
             } else if (device === 'ZXD'){
