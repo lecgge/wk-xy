@@ -46,7 +46,60 @@
             background-color: #0056b3;
         }
 
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3列，等宽 */
+            grid-template-rows: repeat(3, auto);    /* 3行，自动高度 */
+            gap: 15px;                              /* 按钮之间间距 */
+        }
+
+        .switch-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 16px;
+            color: #333;
+        }
+
+        /* 隐藏原生 checkbox */
+        .switch {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 40px;
+            height: 20px;
+            background-color: #ccc;
+            border-radius: 30px;
+            position: relative;
+            cursor: pointer;
+            outline: none;
+            transition: background-color 0.3s ease;
+        }
+
+        /* 滑块样式 */
+        .switch:checked {
+            background-color: #007BFF;
+        }
+
+        .switch::after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+        }
+
+        .switch:checked::after {
+            transform: translateX(20px);
+        }
+
     </style>
+    <script type="module" src="./three_button.js" defer></script>
 </head>
 <body>
 
@@ -61,11 +114,46 @@
 
 <!-- 页面主体内容 -->
 <div style="padding: 20px;">
-    这是 2712/8155 页面的内容。
+    <div class="button-grid">
+        <three-state-switch id="power" class="switch-label" label="按钮 1" value="off"></three-state-switch>
+        <label class="switch-label">按钮 2<input data-id = "button2" type="checkbox" class="switch"><span class="slider"></span></label>
+        <label class="switch-label">按钮 3<input data-id = "button3" type="checkbox" class="switch"><span class="slider"></span></label>
+
+        <label class="switch-label">按钮 4<input data-id = "button4" type="checkbox" class="switch"><span class="slider"></span></label>
+        <label class="switch-label">按钮 5<input data-id = "button5" type="checkbox" class="switch"><span class="slider"></span></label>
+        <label class="switch-label">按钮 6<input data-id = "button6" type="checkbox" class="switch"><span class="slider"></span></label>
+
+        <label class="switch-label">按钮 7<input data-id = "button7" type="checkbox" class="switch"><span class="slider"></span></label>
+        <label class="switch-label">按钮 8<input data-id = "button8" type="checkbox" class="switch"><span class="slider"></span></label>
+        <label class="switch-label">按钮 9<input data-id = "button9" type="checkbox" class="switch"><span class="slider"></span></label>
+    </div>
 </div>
 
 <script>
+
     const { invoke } = window.__TAURI__.core;
+
+
+    document.getElementById("power").addEventListener('change', (e) => {
+        if (e.detail.value === "on") {
+            console.log("on")
+        } else if (e.detail.value === "off"){
+            console.log("off")
+        } else {
+            console.log("auto")
+        }
+    })
+
+    document.querySelectorAll(".switch").forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+            const id = checkbox.getAttribute("data-id");
+            if (checkbox.checked) {
+                console.log(`${id} 已开启`);
+            } else {
+                console.log(`${id} 已关闭`);
+            }
+        });
+    });
     async function handleClick(event) {
         event.preventDefault();
 
