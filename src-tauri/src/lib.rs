@@ -1,4 +1,5 @@
 use std::thread::sleep;
+use tokio::task;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod can_module;
@@ -9,7 +10,6 @@ mod arxml_bean;
 static mut CAN_MODULE: Option<can_module::CanModule> = None;
 
 #[tauri::command]
-#[tokio::main]
 async fn start(device: &str) -> Result<(), String>{
     // sleep(std::time::Duration::from_secs(10));
     println!("Hello, {}!", device);
@@ -22,15 +22,26 @@ async fn start(device: &str) -> Result<(), String>{
         let _ = can_matrix.load_from_arxml("./resource/output.json");
     }
 
-    can_module::start(can_matrix,"can0").await.expect("发送消息报错");
+    task::spawn(async move {
+        let module = can_module::start(can_matrix, "vcan0").await.map_err(|e| e.to_string())?;
+        unsafe {
+            CAN_MODULE = Some(module);
+        }
+        // 可选：保存到状态中
+        // *state.module.lock().unwrap() = Some(module);
+        Ok::<(), String>(())
+    });
     Ok(())
 }
 
 #[tauri::command]
 fn stop() {
     unsafe {
-        if let Some(can_module) = CAN_MODULE.as_mut() {
-            can_module.drop();
+        if let Some(mut module) = CAN_MODULE.take() {
+            // 正确释放资源
+            println!("Module stopped");
+            module.drop();
+            std::mem::drop(module);
         }
     }
 }

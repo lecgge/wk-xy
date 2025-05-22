@@ -82,6 +82,13 @@ impl CanModule {
 
         loop {
             tokio::select! {
+
+                biased;
+
+                _ = wait_for_stop(&stop_signal) => {
+                    println!("收到停止信号，退出发送任务");
+                    break;
+                }
                 // 定时处理周期消息
                 _ = interval.tick() => {
                     let now = Instant::now();
@@ -154,16 +161,11 @@ impl CanModule {
                             }
                     }
                 }
-
-                // 检查停止信号
-                _ = async {
-                    while !stop_signal.load(Ordering::Relaxed) {
-                        tokio::task::yield_now().await;
-                    }
-                } => break
-            }
+        }
         }
     }
+
+    
 
     /// 异步接收任务主循环
     async fn receive_task(socket: Arc<Mutex<CanFdSocket>>, stop_signal: Arc<AtomicBool>) {
@@ -195,7 +197,7 @@ impl CanModule {
             interval.tick().await;
         }
     }
-    
+
     ///  发送单个信号
     pub async fn send_signal(&self, cluster_name: String, frame_id: i32, signal_name: &str, value: f32) {
         let cluster = self.can_matrix.clusters.get(&cluster_name).unwrap();
@@ -219,7 +221,7 @@ impl CanModule {
                     //发送报文
                     messages.insert(message.id,message);
                 }
-                
+
             } else {
                 //如果不存在，则创建一个新的报文并发送
                 if let Some(message) = self.can_matrix.get_message_by_signals(
@@ -230,7 +232,7 @@ impl CanModule {
                 ){
                     self.add_periodic_message(message).await;
                 }
-                
+
             }
         } else {
             //否则只发送一帧
@@ -243,7 +245,7 @@ impl CanModule {
                 next_send_time: None
             }).await;
         }
-        
+
     }
 
     /// 添加周期消息
@@ -271,13 +273,18 @@ impl CanModule {
 
     pub fn drop(&mut self) {
         // 设置停止信号
+        println!("Stopping...");
         self.stop_signal.store(true, Ordering::Relaxed);
     }
 }
 
+async fn wait_for_stop(stop_signal: &Arc<AtomicBool>) {
+    while !stop_signal.load(Ordering::Relaxed) {
+        tokio::task::yield_now().await;
+    }
+}
 
-
-pub(crate) async fn start(can_matrix: CanMatrix,device:&str) -> Result<(), Box<dyn std::error::Error>> {
+pub(crate) async fn start(can_matrix: CanMatrix,device:&str) -> Result<CanModule, Box<dyn std::error::Error>> {
     // 初始化CAN模块
     let mut can = CanModule::new(device,can_matrix)?;
     let message = can.can_matrix.get_message_by_signals(
@@ -321,8 +328,7 @@ pub(crate) async fn start(can_matrix: CanMatrix,device:&str) -> Result<(), Box<d
     .await;
 
     // 运行10秒后自动停止
-    tokio::time::sleep(Duration::from_secs(10)).await;
-    can.drop();
-    tokio::time::sleep(Duration::from_secs(10)).await;
-    Ok(())
+    // tokio::time::sleep(Duration::from_secs(10)).await;
+    // can.drop();
+    Ok(can)
 }

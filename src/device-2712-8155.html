@@ -52,7 +52,7 @@
 
 <!-- 自定义标题栏 -->
 <div class="header-bar">
-    <button class="back-button" onclick="window.history.back()">
+    <button class="back-button" onclick="handleClick(event)">
         <img src="assets/left-arrow.png" style="height: 16px; width: 16px" alt="返回">
     </button>
     <div class="page-title">2712/8155</div>
@@ -63,6 +63,22 @@
 <div style="padding: 20px;">
     这是 2712/8155 页面的内容。
 </div>
+
+<script>
+    const { invoke } = window.__TAURI__.core;
+    async function handleClick(event) {
+        event.preventDefault();
+
+
+        try {
+            await invoke("stop");
+            window.history.back()
+        } catch (error) {
+            console.error("调用失败:", error);
+            alert("操作失败，请重试");
+        }
+    }
+</script>
 
 </body>
 </html>

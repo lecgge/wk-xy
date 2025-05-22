@@ -11,7 +11,7 @@
     "windows": [
       {
         "title": "wk-xy-rust",
-        "decorations": false,
+        "decorations": true,
         "transparent": true,
         "fullscreen": false,
         "width": 800,
