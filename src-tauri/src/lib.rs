@@ -1,24 +1,30 @@
 use std::thread::sleep;
+use std::time::SystemTime;
 use tokio::task;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod can_module;
 mod can_matrix;
 mod arxml_bean;
+mod use_time;
 
+use chrono::{DateTime, Local, TimeZone, Utc};
+use tauri::{Manager, WindowEvent};
+use crate::use_time::save;
 
 static mut CAN_MODULE: Option<can_module::CanModule> = None;
+pub static mut START_TIME: Option<DateTime<Local>> = None;
 
 #[tauri::command]
-async fn start(device: &str) -> Result<(), String>{
+async fn start(device: &str) -> Result<(), String> {
     // sleep(std::time::Duration::from_secs(10));
     println!("Hello, {}!", device);
     let mut can_matrix = can_matrix::CanMatrix::new();
-    if device == "2712"{
+    if device == "2712" {
         let _ = can_matrix.load_from_arxml("./resource/output.json");
-    }else if device == "ZXD"{
+    } else if device == "ZXD" {
         let _ = can_matrix.load_from_arxml("./resource/output.json");
-    }else{
+    } else {
         let _ = can_matrix.load_from_arxml("./resource/output.json");
     }
 
@@ -46,11 +52,49 @@ fn stop() {
     }
 }
 
+#[tauri::command]
+fn get_runtime() -> Result<String, String> {
+    unsafe {
+        if let Some(start) = START_TIME {
+            let now = Local::now();
+
+            Ok(format!("{}", now.format("%Y-%m-%d %H:%M:%S")))
+        } else {
+            let date_time: DateTime<Local> = Local.with_ymd_and_hms(2025, 01, 01, 00, 00, 00).unwrap();
+            let formatted = format!("{}", date_time.format("%d/%m/%Y %H:%M"));
+            Ok(formatted)
+        }
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    unsafe {
+        START_TIME = Some(Local::now());
+    }
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![start,stop])
+        .invoke_handler(tauri::generate_handler![start,stop,get_runtime])
+        .setup(|app| {
+            // 监听主窗口关闭事件
+            let handler = app.handle();
+            let main_window = handler.get_webview_window("main").unwrap();
+            let main_window_clone = main_window.clone();
+            main_window_clone.on_window_event(move |event| {
+                if let WindowEvent::CloseRequested { api, .. } = event {
+                    let end_time = Local::now();
+                    unsafe {
+                        // 调用 save 函数保存数据
+                        crate::use_time::save(
+                            (format!("{}", START_TIME.unwrap().format("%Y-%m-%d %H:%M:%S")),
+                             format!("{}", end_time.format("%Y-%m-%d %H:%M:%S"))
+                            )
+                        );
+                    }
+                }
+            });
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
