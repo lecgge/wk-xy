@@ -36,10 +36,14 @@ jobs:
           linker = "arm-linux-gnueabihf-gcc"
           EOF
 
-      - name: Build for ARM64
+      - name: Install cargo-zigbuild
+        run: |
+          cargo install cargo-zigbuild
+
+      - name: Build with zig
         run: |
           cd src-tauri
-          cargo build --target=aarch64-unknown-linux-gnu --release
+          cargo zigbuild --target arm-unknown-linux-gnueabihf --release
 
       - name: Upload ARM64 binary
         uses: actions/upload-artifact@v4
@@ -76,10 +80,14 @@ jobs:
           linker = "arm-linux-gnueabihf-gcc"
           EOF
 
-      - name: Build for ARMv7
+      - name: Install cargo-zigbuild
+        run: |
+          cargo install cargo-zigbuild
+
+      - name: Build with zig
         run: |
           cd src-tauri
-          cargo build --target=arm-unknown-linux-gnueabihf --release
+          cargo zigbuild --target arm-unknown-linux-gnueabihf --release
 
       - name: Upload ARMv7 binary
         uses: actions/upload-artifact@v4
