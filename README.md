@@ -14,3 +14,6 @@ This template should help get you started developing with Tauri in vanilla HTML,
 ![img.png](img.png)
 ## 取消开机锁屏密码
 把文件lightdm.conf 放到/etc/lightdm/目录下
+
+## Tauri环境配置说明
+https://github.com/crescware/moment-digest/pull/2
