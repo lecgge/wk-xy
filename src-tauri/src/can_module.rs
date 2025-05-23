@@ -270,6 +270,28 @@ impl CanModule {
             .await
             .expect("Message channel closed");
     }
+    
+    pub async fn send_signals(&self, cluster_name: String, frame_id: i32, signals: HashMap<String, f32>) {
+        let cluster = self.can_matrix.clusters.get(&cluster_name).unwrap();
+        let frame = cluster.frame_by_id.get(&frame_id).unwrap();
+        //创建报文
+        let message = self.can_matrix.get_message_by_signals(
+            String::from(cluster_name),
+            frame_id,
+            signals
+        ).unwrap();
+        //如果这个信号对应的报文是周期报文
+        if frame.cycle_time.unwrap() > 0 {
+            self.add_periodic_message(message).await;
+        } else { 
+            self.send_once(message).await;
+        }
+    }
+    
+    pub async fn stop_send_message(&self, frame_id: u32){
+        let mut messages = self.periodic_messages.lock().await;
+        messages.remove(&frame_id);
+    }
 
     pub fn drop(&mut self) {
         // 设置停止信号
@@ -287,14 +309,14 @@ async fn wait_for_stop(stop_signal: &Arc<AtomicBool>) {
 pub(crate) async fn start(can_matrix: CanMatrix,device:&str) -> Result<CanModule, Box<dyn std::error::Error>> {
     // 初始化CAN模块
     let mut can = CanModule::new(device,can_matrix)?;
-    let message = can.can_matrix.get_message_by_signals(
-        String::from("ADCANFD"),
-        0x4D2,
-        HashMap::from([("isHADS_NM_BSMtoRMS".to_string(), 1.0f32),
-            ("isHADS_NM_RSStoRMS".to_string(), 1.0f32),
-            ("isHADS_NM_NOSSta".to_string(), 1.0f32),
-        ]),
-    );
+    // let message = can.can_matrix.get_message_by_signals(
+    //     String::from("ADCANFD"),
+    //     0x4D2,
+    //     HashMap::from([("isHADS_NM_BSMtoRMS".to_string(), 1.0f32),
+    //         ("isHADS_NM_RSStoRMS".to_string(), 1.0f32),
+    //         ("isHADS_NM_NOSSta".to_string(), 1.0f32),
+    //     ]),
+    // );
     // let mut message = can_matrix.get_message_by_signals(
     //     String::from("ADCANFD"),
     //     451,
@@ -308,24 +330,24 @@ pub(crate) async fn start(can_matrix: CanMatrix,device:&str) -> Result<CanModule
     // ("isHADS_NM_BSMtoRMS".to_string(), 1.0f32),
     // ("isHADS_NM_RSStoRMS".to_string(), 1.0f32),
     // ("isHADS_NM_NOSSta".to_string(), 1.0f32),
-    println!("------------{:?}", message);
+    // println!("------------{:?}", message);
     // let signals = can_matrix.get_signals_by_message(0x4D2, &*message.as_ref().unwrap().data);
     // 添加周期消息（100ms周期）
-    if let Some(mut message) = message {
-        message.period_ms = 100;
-        can.add_periodic_message(message).await;
-    }
+    // if let Some(mut message) = message {
+    //     message.period_ms = 100;
+    //     can.add_periodic_message(message).await;
+    // }
 
 
     // 发送单次消息
-    can.send_once(CanMessage {
-        id: 0x201,
-        data: vec![0xFF],
-        is_fd:true,
-        period_ms: -1,
-        next_send_time: None,
-    })
-    .await;
+    // can.send_once(CanMessage {
+    //     id: 0x201,
+    //     data: vec![0xFF],
+    //     is_fd:true,
+    //     period_ms: -1,
+    //     next_send_time: None,
+    // })
+    // .await;
 
     // 运行10秒后自动停止
     // tokio::time::sleep(Duration::from_secs(10)).await;

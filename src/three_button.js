@@ -18,9 +18,9 @@ class ThreeStateSwitch extends HTMLElement {
         const switchWrapper = document.createElement('div');
         switchWrapper.className = `toggle-switch ${this.value}`;
         switchWrapper.innerHTML = `
-        <div class="toggle-option" data-value="off">关</div>
-        <div class="toggle-option" data-value="on">开</div>
-        <div class="toggle-option" data-value="auto">自动</div>
+        <div class="toggle-option" data-value="off">Off</div>
+        <div class="toggle-option" data-value="on">ACC</div>
+        <div class="toggle-option" data-value="auto">RUN</div>
         <div class="slider"></div>
       `;
 

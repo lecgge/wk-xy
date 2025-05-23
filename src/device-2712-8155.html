@@ -137,9 +137,17 @@
     document.getElementById("power").addEventListener('change', (e) => {
         if (e.detail.value === "on") {
             console.log("on")
+            //todo-上电
+            //停止发送唤醒报文
+            invoke("stop_send_message",{"id": 0x4C0}).then();
         } else if (e.detail.value === "off"){
             console.log("off")
+            //todo-下电
+            //停止发送唤醒报文
+            invoke("stop_send_message",{"id": 0x4C0}).then();
         } else {
+            //发送唤醒报文
+            invoke("send_message",{"id": 0x4C0,"data": [0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00],"periodMs":100,"isFd":true}).then();
             console.log("auto")
         }
     })
@@ -147,10 +155,20 @@
     document.querySelectorAll(".switch").forEach((checkbox) => {
         checkbox.addEventListener("change", () => {
             const id = checkbox.getAttribute("data-id");
-            if (checkbox.checked) {
-                console.log(`${id} 已开启`);
-            } else {
-                console.log(`${id} 已关闭`);
+            if (id === "button2"){
+                if (checkbox.checked) {
+                    console.log(`${id} 已开启`);
+                    invoke("send_signal",{"clusterName":"ADCANFD","id": 451,"signalName": "isAutocTrGearShftDircn_0","value":3}).then();
+                } else {
+                    console.log(`${id} 已关闭`);
+                }
+            }else if (id === "button3"){
+                if (checkbox.checked) {
+                    console.log(`${id} 已开启`);
+                    invoke("send_signals",{"clusterName":"ADCANFD","id": 319,"signals":{"isLDrvnWhlRotlDircn_1":3,"isRDrvnWhlRotlDircn_1":3,"isSCS_020ms_PDU05_RC_1":15,}}).then();
+                } else {
+                    console.log(`${id} 已关闭`);
+                }
             }
         });
     });

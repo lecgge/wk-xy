@@ -42,6 +42,61 @@ async fn start(device: &str) -> Result<(), String> {
 }
 
 #[tauri::command]
+async fn send_message(id: u32, data: Vec<u8>, periodMs: i64,  isFd:bool) -> Result<(), String> {
+    let message = can_module::CanMessage {
+        id,
+        data,
+        period_ms:periodMs,
+        is_fd:isFd,
+        next_send_time: None,
+    };
+    task::spawn(async move {
+        let module = unsafe {
+            CAN_MODULE.as_mut().unwrap()
+        };
+        module.add_periodic_message(message).await;
+        Ok::<(), String>(())
+    });
+    Ok(())
+}
+
+#[tauri::command]
+async fn send_signal(clusterName: String,id: u32, signalName: String, value: f32) -> Result<(), String> {
+
+    task::spawn(async move {
+        let module = unsafe {
+            CAN_MODULE.as_mut().unwrap()
+        };
+        module.send_signal(clusterName, id as i32, &*signalName, value).await;
+        Ok::<(), String>(())
+    });
+    Ok(())
+}
+
+#[tauri::command]
+async fn send_signals(clusterName: String,id: u32, signals: HashMap<String, f32>) -> Result<(), String> {
+    task::spawn(async move {
+        let module = unsafe {
+            CAN_MODULE.as_mut().unwrap()
+        };
+        module.send_signals(clusterName, id as i32, signals).await;
+        Ok::<(), String>(())
+    });
+    Ok(())
+}
+
+#[tauri::command]
+async fn stop_send_message(id: u32) -> Result<(), String> {
+    task::spawn(async move {
+        let module = unsafe {
+            CAN_MODULE.as_mut().unwrap()
+        };
+        module.stop_send_message(id).await;
+        Ok::<(), String>(())
+    });
+    Ok::<(), String>(())
+}
+#[tauri::command]
 fn stop() {
     unsafe {
         if let Some(mut module) = CAN_MODULE.take() {
@@ -80,7 +135,16 @@ pub fn run() {
     }
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![start,stop,get_runtime,get_history_time])
+        .invoke_handler(tauri::generate_handler![
+            start,
+            stop,
+            get_runtime,
+            get_history_time,
+            send_message,
+            send_signal,
+            send_signals,
+            stop_send_message,
+        ])
         .setup(|app| {
             // 监听主窗口关闭事件
             let handler = app.handle();
