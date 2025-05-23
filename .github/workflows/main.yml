@@ -36,6 +36,18 @@ jobs:
           linker = "arm-linux-gnueabihf-gcc"
           EOF
 
+      - name: Install Zig
+        run: |
+          ZIG_VERSION=0.13.1
+          wget https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          tar xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          sudo mv zig-linux-x86_64-${ZIG_VERSION} /usr/local/zig
+          sudo ln -s /usr/local/zig/zig /usr/local/bin/zig
+
+      - name: Verify Zig installation
+        run: |
+          zig version
+
       - name: Install cargo-zigbuild
         run: |
           cargo install cargo-zigbuild
@@ -79,7 +91,17 @@ jobs:
           [target.arm-unknown-linux-gnueabihf]
           linker = "arm-linux-gnueabihf-gcc"
           EOF
-          
+      - name: Install Zig
+        run: |
+          ZIG_VERSION=0.13.1
+          wget https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          tar xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          sudo mv zig-linux-x86_64-${ZIG_VERSION} /usr/local/zig
+          sudo ln -s /usr/local/zig/zig /usr/local/bin/zig
+
+      - name: Verify Zig installation
+        run: |
+          zig version
       - name: Install cargo-zigbuild
         run: |
           cargo install cargo-zigbuild
