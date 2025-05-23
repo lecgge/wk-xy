@@ -12,3 +12,5 @@ This template should help get you started developing with Tauri in vanilla HTML,
 
 ## 设置开机自动执行can模块配置脚本流程
 ![img.png](img.png)
+## 取消开机锁屏密码
+把文件lightdm.conf 放到/etc/lightdm/目录下
