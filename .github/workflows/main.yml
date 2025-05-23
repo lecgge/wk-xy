@@ -39,9 +39,9 @@ jobs:
       - name: Install Zig
         run: |
           ZIG_VERSION=0.13.1
-          wget https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          tar xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          sudo mv zig-linux-x86_64-${ZIG_VERSION} /usr/local/zig
+          wget https://ziglang.org/builds/zig-linux-aarch64-0.15.0-dev.621+a63f7875f.tar.xz
+          tar xf zig-linux-aarch64-0.15.0-dev.621+a63f7875f.tar.xz
+          sudo mv zig-linux-aarch64-0.15.0-dev.621+a63f7875f /usr/local/zig
           sudo ln -s /usr/local/zig/zig /usr/local/bin/zig
 
       - name: Verify Zig installation
@@ -94,9 +94,9 @@ jobs:
       - name: Install Zig
         run: |
           ZIG_VERSION=0.13.1
-          wget https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          tar xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          sudo mv zig-linux-x86_64-${ZIG_VERSION} /usr/local/zig
+          wget https://ziglang.org/builds/zig-linux-aarch64-0.15.0-dev.621+a63f7875f.tar.xz
+          tar xf zig-linux-aarch64-0.15.0-dev.621+a63f7875f.tar.xz
+          sudo mv zig-linux-aarch64-0.15.0-dev.621+a63f7875f /usr/local/zig
           sudo ln -s /usr/local/zig/zig /usr/local/bin/zig
 
       - name: Verify Zig installation
