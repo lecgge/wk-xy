@@ -36,19 +36,6 @@ jobs:
           linker = "arm-linux-gnueabihf-gcc"
           EOF
 
-      - name: Install zig
-        run: |
-          # 使用官方推荐方式安装 zig
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          rustup target add arm-unknown-linux-gnueabihf
-
-          # 安装 zig (使用 zigup)
-          cargo install zigup
-          zigup install 0.13.1  # 或者使用最新版本
-
-          # 添加 zig 到 PATH
-          echo "$HOME/.zig" >> $GITHUB_PATH
-          
       - name: Install cargo-zigbuild
         run: |
           cargo install cargo-zigbuild
@@ -93,19 +80,6 @@ jobs:
           linker = "arm-linux-gnueabihf-gcc"
           EOF
           
-      - name: Install zig
-        run: |
-          # 使用官方推荐方式安装 zig
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          rustup target add arm-unknown-linux-gnueabihf
-
-          # 安装 zig (使用 zigup)
-          cargo install zigup
-          zigup install 0.13.1  # 或者使用最新版本
-
-          # 添加 zig 到 PATH
-          echo "$HOME/.zig" >> $GITHUB_PATH
-
       - name: Install cargo-zigbuild
         run: |
           cargo install cargo-zigbuild
