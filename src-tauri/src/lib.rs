@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::thread::sleep;
 use std::time::SystemTime;
 use tokio::task;
@@ -10,7 +11,7 @@ mod use_time;
 
 use chrono::{DateTime, Local, TimeZone, Utc};
 use tauri::{Manager, WindowEvent};
-use crate::use_time::save;
+use crate::use_time::{calculate_usage, load, save};
 
 static mut CAN_MODULE: Option<can_module::CanModule> = None;
 pub static mut START_TIME: Option<DateTime<Local>> = None;
@@ -52,6 +53,11 @@ fn stop() {
     }
 }
 
+
+#[tauri::command]
+fn get_history_time() -> Option<HashMap<String, i64>> {
+    Some(calculate_usage(&load().unwrap()))
+}
 #[tauri::command]
 fn get_runtime() -> Result<String, String> {
     unsafe {
@@ -74,7 +80,7 @@ pub fn run() {
     }
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![start,stop,get_runtime])
+        .invoke_handler(tauri::generate_handler![start,stop,get_runtime,get_history_time])
         .setup(|app| {
             // 监听主窗口关闭事件
             let handler = app.handle();
