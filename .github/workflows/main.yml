@@ -1,0 +1,76 @@
+name: Rust ARM Cross Compile
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - release
+
+jobs:
+  build-arm64:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-aarch64-linux-gnu
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: aarch64-unknown-linux-gnu
+          profile: minimal
+
+      - name: Configure Cargo
+        run: |
+          udo apt update
+          sudo apt install -y gcc-aarch64-linux-gnu
+          mkdir -p .cargo
+          echo "[target.aarch64-unknown-linux-gnu]\nlinker = \"aarch64-linux-gnu-gcc\"" > .cargo/config.toml
+
+      - name: Build for ARM64
+        run: cargo build --target=aarch64-unknown-linux-gnu --release
+
+      - name: Upload ARM64 binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: arm64-binary
+          path: target/aarch64-unknown-linux-gnu/release/your_binary
+
+  build-armv7l:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-arm-linux-gnueabihf
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: arm-unknown-linux-gnueabihf
+          profile: minimal
+
+      - name: Configure Cargo
+        run: |
+          udo apt update
+          sudo apt install -y gcc-aarch64-linux-gnu
+          mkdir -p .cargo
+          echo "[target.arm-unknown-linux-gnueabihf]\nlinker = \"arm-linux-gnueabihf-gcc\"" > .cargo/config.toml
+
+      - name: Build for ARMv7
+        run: cargo build --target=arm-unknown-linux-gnueabihf --release
+
+      - name: Upload ARMv7 binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: armv7-binary
+          path: target/arm-unknown-linux-gnueabihf/release/your_binary
