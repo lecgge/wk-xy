@@ -29,6 +29,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y gcc-arm-linux-gnueabihf
+          sudo apt install -y libglib2.0-dev-armhf-cross
           mkdir -p .cargo
           cat <<EOF > .cargo/config.toml
           [target.arm-unknown-linux-gnueabihf]
@@ -68,6 +69,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y gcc-arm-linux-gnueabihf
+          sudo apt install -y libglib2.0-dev-armhf-cross
           mkdir -p .cargo
           cat <<EOF > .cargo/config.toml
           [target.arm-unknown-linux-gnueabihf]
