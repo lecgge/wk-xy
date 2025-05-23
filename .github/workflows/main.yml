@@ -27,7 +27,7 @@ jobs:
 
       - name: Configure Cargo
         run: |
-          udo apt update
+          sudo apt update
           sudo apt install -y gcc-aarch64-linux-gnu
           mkdir -p .cargo
           echo "[target.aarch64-unknown-linux-gnu]\nlinker = \"aarch64-linux-gnu-gcc\"" > .cargo/config.toml
@@ -61,7 +61,7 @@ jobs:
 
       - name: Configure Cargo
         run: |
-          udo apt update
+          sudo apt update
           sudo apt install -y gcc-aarch64-linux-gnu
           mkdir -p .cargo
           echo "[target.arm-unknown-linux-gnueabihf]\nlinker = \"arm-linux-gnueabihf-gcc\"" > .cargo/config.toml
