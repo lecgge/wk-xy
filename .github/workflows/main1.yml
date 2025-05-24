@@ -1,0 +1,77 @@
+name: Tauri ARM Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. 设置Node.js环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      # 3. 安装前端依赖并构建
+      - name: Install Node.js dependencies
+        run: npm install
+      - name: Build frontend
+        run: npm run build
+
+      # 4. 安装系统依赖（ARM架构）
+      - name: Install system dependencies for ARM
+        run: |
+          sudo apt update
+          sudo apt install -y qemu-user-static binfmt-support
+          sudo dpkg --add-architecture arm64
+          sudo apt update
+          sudo apt install -y \
+            libwebkit2gtk-4.0-dev:arm64 \
+            gcc-aarch64-linux-gnu \
+            g++-aarch64-linux-gnu
+
+      # 5. 配置Rust环境并添加ARM目标
+      - name: Setup Rust
+        uses: actions/setup-rust@v2
+        with:
+          toolchain: stable
+          target: aarch64-unknown-linux-gnu
+          components: rust-src
+
+      # 6. 配置Cargo使用ARM交叉编译器
+      - name: Configure Cargo for ARM target
+        run: |
+          mkdir -p $HOME/.cargo
+          echo '[target.aarch64-unknown-linux-gnu]' > $HOME/.cargo/config.toml
+          echo 'linker = "aarch64-linux-gnu-gcc"' >> $HOME/.cargo/config.toml
+
+      # 7. 安装Rust依赖
+      - name: Install Rust dependencies
+        run: cargo build --target aarch64-unknown-linux-gnu
+
+      # 8. 安装Tauri CLI
+      - name: Install Tauri CLI
+        run: npm install -g @tauri-apps/cli@latest
+
+      # 9. 构建Tauri应用（ARM目标）
+      - name: Build Tauri application for ARM
+        run: |
+          # 确保tauri.conf.json中配置了正确的target
+          tauri build --target aarch64-unknown-linux-gnu
+
+      # 10. 上传构建产物
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: tauri-arm-ubuntu
+          path: target/aarch64-unknown-linux-gnu/release/
